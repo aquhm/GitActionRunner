@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Items", "Items", "{75444D4C-DC4E-4870-B3F1-8C4582EF9540}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitActionRunner", "GitActionRunner\GitActionRunner.csproj", "{8BE484DE-7919-440C-804E-EB7D6E4CE3A9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C511447B-960D-4A90-8E5F-C6B20675294F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8BE484DE-7919-440C-804E-EB7D6E4CE3A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BE484DE-7919-440C-804E-EB7D6E4CE3A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BE484DE-7919-440C-804E-EB7D6E4CE3A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BE484DE-7919-440C-804E-EB7D6E4CE3A9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8BE484DE-7919-440C-804E-EB7D6E4CE3A9} = {C511447B-960D-4A90-8E5F-C6B20675294F}
+	EndGlobalSection
+EndGlobal
