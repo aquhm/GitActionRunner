@@ -11,7 +11,7 @@
 
     <Grid Margin="20">
         <StackPanel>
-            <TextBlock Text="GitHub 계정 연동" 
+            <TextBlock Text="GitHub Account Connection" 
                        Style="{StaticResource PageHeader}"/>
                        
             <Border Background="{StaticResource CardBackgroundColor}"
@@ -32,9 +32,10 @@
                              Height="35"
                              Padding="10,0"
                              VerticalContentAlignment="Center"
-                             Margin="0,0,0,20"/>
+                             Margin="0,0,0,20"
+                             FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}"/>
                             
-                    <Button Content="토큰으로 로그인"
+                    <Button Content="Login with Token"
                             Command="{Binding LoginWithTokenCommand}"
                             Style="{StaticResource ModernButton}"
                             HorizontalAlignment="Center"/>
@@ -43,6 +44,7 @@
         </StackPanel>
         <controls:LoadingIndicator 
             LoadingMessage="{Binding LoadingMessage}"
+            ShowBackground="True"
             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
     </Grid>
 </Page>

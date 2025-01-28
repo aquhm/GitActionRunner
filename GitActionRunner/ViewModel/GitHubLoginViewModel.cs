@@ -86,7 +86,7 @@ namespace GitActionRunner.ViewModels
                         NavigationService.NavigateTo<RepositoryListView>();
                     }
                 }
-            }, "계정 연동 상태를 확인중입니다...");
+            }, "Checking account connection status...");
         }
 
 
@@ -96,7 +96,7 @@ namespace GitActionRunner.ViewModels
             {
                 if (string.IsNullOrEmpty(AccessToken))
                 {
-                    ConnectionStatus = "토큰을 입력해주세요";
+                    ConnectionStatus = "Please enter a token";
                     return;
                 }
 
@@ -113,13 +113,13 @@ namespace GitActionRunner.ViewModels
                     }
                     else
                     {
-                        ConnectionStatus = "인증 실패: 유효하지 않은 토큰";
+                        ConnectionStatus = "Authentication failed: Invalid token";
                     }
-                }, "인증을 진행중입니다...");
+                }, "Authenticating...");
             }
             catch (Exception ex)
             {
-                ConnectionStatus = "연결 실패";
+                ConnectionStatus = "Connection failed";
             }
         }
 

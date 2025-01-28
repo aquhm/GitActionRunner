@@ -19,7 +19,7 @@ public abstract class BaseViewModel : ObservableObject
         protected set => SetProperty(ref _loadingMessage, value);
     }
 
-    public async Task ExecuteWithLoadingAsync(Func<Task> action, string loadingMessage = "데이터를 로딩중입니다...")
+    public async Task ExecuteWithLoadingAsync(Func<Task> action, string loadingMessage = "Loading data...")
     {
         try
         {

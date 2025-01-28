@@ -96,8 +96,6 @@ namespace GitActionRunner
             services.AddTransient<GitHubLoginView>();
             services.AddTransient<RepositoryListView>();
         
-            // Navigation Service를 singleton으로 등록
-            //services.AddTransient<INavigationService, NavigationService>();
             services.AddSingleton<INavigationService>(provider =>
                                                                new NavigationService(provider, _mainNavigationFrame));
         }

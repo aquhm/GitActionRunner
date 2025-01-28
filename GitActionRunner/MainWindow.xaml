@@ -4,11 +4,11 @@
         Title="Git Action Runner"
         WindowStyle="None"
         ResizeMode="CanResize"
-        BorderThickness="1"
+        BorderThickness="0"
+        AllowsTransparency="True"
         Height="300"
         Width="400"
-        WindowStartupLocation="CenterScreen"
-        ContentRendered="Window_ContentRendered">
+        WindowStartupLocation="CenterScreen">
     
     <Window.Background>
         <SolidColorBrush Color="#1A1A2E"/>

@@ -67,14 +67,14 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
             
-                                <TextBlock Text="설정"
+                                <TextBlock Text="Settings"
                                            Foreground="White"
                                            FontSize="18"
                                            FontWeight="Bold"
                                            Margin="0,0,0,20"/>
             
                                 <StackPanel Grid.Row="1">
-                                    <Button Content="로그아웃"
+                                    <Button Content="Logout"
                                             Command="{Binding LogoutCommand}"
                                             Style="{StaticResource MenuPopupButton}"
                                             HorizontalAlignment="Stretch"
@@ -124,6 +124,7 @@
         </ListView>
         <controls:LoadingIndicator 
             LoadingMessage="{Binding LoadingMessage}"
+            ShowBackground="False"
             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
         <Grid Grid.Column="1" Grid.Row="1"  Margin="0, 10, 10, 10">
@@ -181,6 +182,7 @@
             </ListView>
             <controls:LoadingIndicator 
                 LoadingMessage="{Binding LoadingMessage}"
+                ShowBackground="False"
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </Grid>
     </Grid>

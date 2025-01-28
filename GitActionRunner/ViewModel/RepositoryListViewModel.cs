@@ -110,14 +110,14 @@ namespace GitActionRunner.ViewModels
                 {
                     await LoadUserInfo();
                     await LoadRepositories();
-                }, "저장소 정보를 불러오는 중입니다...");
+                }, "Loading repository information...");
         
                 Log.Information("InitializeAsync completed");
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Error in InitializeAsync");
-                MessageBox.Show($"초기화 중 치명적인 오류가 발생했습니다: {ex.Message}", 
+                MessageBox.Show($"A critical error occurred during initialization: {ex.Message}", 
                                 "오류", 
                                 MessageBoxButton.OK, 
                                 MessageBoxImage.Error);
@@ -152,7 +152,7 @@ namespace GitActionRunner.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"로그아웃 중 오류가 발생했습니다: {ex.Message}", 
+                MessageBox.Show($"An error occurred during logout: {ex.Message}", 
                                 "오류", 
                                 MessageBoxButton.OK, 
                                 MessageBoxImage.Error);
@@ -204,7 +204,7 @@ namespace GitActionRunner.ViewModels
                     {
                         Workflows.Add(workflow);
                     }
-                }, "워크플로우 정보를 불러오는 중입니다...");
+                }, "Loading workflow information...");
             }
             catch (Exception ex)
             {
@@ -262,7 +262,7 @@ namespace GitActionRunner.ViewModels
                     catch (Exception ex)
                     {
                         Log.Error(ex, "Error in InitializeAsync");
-                        MessageBox.Show($"데이터 로딩 중 오류가 발생했습니다: {ex.Message}", 
+                        MessageBox.Show($"An error occurred while loading data: {ex.Message}", 
                                         "오류", 
                                         MessageBoxButton.OK, 
                                         MessageBoxImage.Error);
@@ -273,7 +273,7 @@ namespace GitActionRunner.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "Error in OnNavigatedTo");
-                MessageBox.Show($"화면 전환 중 오류가 발생했습니다: {ex.Message}", 
+                MessageBox.Show($"An error occurred during screen transition: {ex.Message}", 
                                 "오류", 
                                 MessageBoxButton.OK, 
                                 MessageBoxImage.Error);

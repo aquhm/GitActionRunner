@@ -12,10 +12,10 @@ namespace GitActionRunner.Controls
                                             typeof(LoadingIndicator), 
                                             new PropertyMetadata("Loading..."));
 
-        public static readonly DependencyProperty BackgroundProperty =
-                DependencyProperty.Register("Background", typeof(Brush), 
+        public static readonly DependencyProperty ShowBackgroundProperty =
+                DependencyProperty.Register("ShowBackground", typeof(bool), 
                                             typeof(LoadingIndicator), 
-                                            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0x25, 0x25, 0x47))));
+                                            new PropertyMetadata(false));
 
         public string LoadingMessage
         {
@@ -23,10 +23,10 @@ namespace GitActionRunner.Controls
             set => SetValue(LoadingMessageProperty, value);
         }
 
-        public new Brush Background
+        public bool ShowBackground
         {
-            get => (Brush)GetValue(BackgroundProperty);
-            set => SetValue(BackgroundProperty, value);
+            get => (bool)GetValue(ShowBackgroundProperty);
+            set => SetValue(ShowBackgroundProperty, value);
         }
 
         public LoadingIndicator()

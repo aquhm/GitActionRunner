@@ -63,7 +63,7 @@ namespace GitActionRunner.Services
             catch (Exception ex)
             {
                 Log.Error(ex, "Navigation failed to page: {PageType}", typeof(T).Name);
-                MessageBox.Show($"화면 전환 중 오류가 발생했습니다: {ex.Message}", 
+                MessageBox.Show($"An error occurred during screen transition: {ex.Message}", 
                                 "오류", 
                                 MessageBoxButton.OK, 
                                 MessageBoxImage.Error);
@@ -94,7 +94,7 @@ namespace GitActionRunner.Services
                     catch (Exception ex)
                     {
                         Log.Error(ex, "Failed to execute OnNavigatedTo");
-                        MessageBox.Show($"초기화 중 오류가 발생했습니다: {ex.Message}", 
+                        MessageBox.Show($"An error occurred during initialization: {ex.Message}", 
                                         "오류", 
                                         MessageBoxButton.OK, 
                                         MessageBoxImage.Error);
@@ -104,7 +104,7 @@ namespace GitActionRunner.Services
             catch (Exception ex)
             {
                 Log.Error(ex, "Critical error in OnNavigated");
-                MessageBox.Show($"치명적인 오류가 발생했습니다: {ex.Message}", 
+                MessageBox.Show($"A critical error has occurred: {ex.Message}", 
                                 "오류", 
                                 MessageBoxButton.OK, 
                                 MessageBoxImage.Error);
