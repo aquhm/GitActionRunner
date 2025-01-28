@@ -11,7 +11,7 @@ using Serilog;
 
 namespace GitActionRunner.ViewModels
 {
-    public class RepositoryListViewModel : ObservableObject, INavigationAware
+    public class RepositoryListViewModel : BaseViewModel, INavigationAware
     {
         private readonly IGitHubService _gitHubService;
         private readonly IAuthenticationService _authService;
@@ -102,18 +102,15 @@ namespace GitActionRunner.ViewModels
             try
             {
                 Log.Debug("Clearing collections");
-                await Application.Current.Dispatcher.InvokeAsync(() => 
+                Repositories?.Clear();
+                Workflows?.Clear();
+                Branches?.Clear();
+        
+                await ExecuteWithLoadingAsync(async () =>
                 {
-                    if (Repositories != null) Repositories.Clear();
-                    if (Workflows != null) Workflows.Clear();
-                    if (Branches != null) Branches.Clear();
-                });
-        
-                Log.Information("Loading user info");
-                await LoadUserInfo();
-        
-                Log.Information("Loading repositories");
-                await LoadRepositories();
+                    await LoadUserInfo();
+                    await LoadRepositories();
+                }, "저장소 정보를 불러오는 중입니다...");
         
                 Log.Information("InitializeAsync completed");
             }
@@ -130,6 +127,7 @@ namespace GitActionRunner.ViewModels
         
         private async Task LoadUserInfo()
         {
+            Log.Information("Loading user info");
             try
             {
                 var user = await _gitHubService.GetCurrentUser();
@@ -163,6 +161,7 @@ namespace GitActionRunner.ViewModels
         
         private async Task LoadRepositories()
         {
+            Log.Information("Loading repositories");
             try
             {
                 var repos = await _gitHubService.GetRepositoriesAsync();
@@ -182,7 +181,6 @@ namespace GitActionRunner.ViewModels
             }
         }
         
-        // RepositoryListViewModel.cs
         private async Task LoadWorkflows(Repository repository)
         {
             if (repository == null)
@@ -191,19 +189,22 @@ namespace GitActionRunner.ViewModels
                 Branches.Clear();
                 return;
             }
-        
+            
             try
             {
-                var branches = await _gitHubService.GetBranchesAsync(repository.Owner, repository.Name);
-                Branches = new ObservableCollection<string>(branches);
-                SelectedBranch = branches.FirstOrDefault();
-                
-                var workflows = await _gitHubService.GetWorkflowRunsAsync(repository.Owner, repository.Name);
-                Workflows.Clear();
-                foreach (var workflow in workflows)
+                await ExecuteWithLoadingAsync(async () =>
                 {
-                    Workflows.Add(workflow);
-                }
+                    var branches = await _gitHubService.GetBranchesAsync(repository.Owner, repository.Name);
+                    Branches = new ObservableCollection<string>(branches);
+                    SelectedBranch = branches.FirstOrDefault();
+                
+                    var workflows = await _gitHubService.GetWorkflowRunsAsync(repository.Owner, repository.Name);
+                    Workflows.Clear();
+                    foreach (var workflow in workflows)
+                    {
+                        Workflows.Add(workflow);
+                    }
+                }, "워크플로우 정보를 불러오는 중입니다...");
             }
             catch (Exception ex)
             {

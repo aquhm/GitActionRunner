@@ -6,7 +6,7 @@ using GitActionRunner.Views;
 
 namespace GitActionRunner.ViewModels
 {
-    public class GitHubLoginViewModel : ObservableObject
+    public class GitHubLoginViewModel : BaseViewModel
     {
         private readonly IGitHubService _gitHubService;
         private readonly IAuthenticationService _authService;
@@ -74,16 +74,19 @@ namespace GitActionRunner.ViewModels
         
         private async Task InitializeAsync()
         {
-            var savedToken = await _authService.GetAccessTokenAsync();
-            if (!string.IsNullOrEmpty(savedToken))
+            await ExecuteWithLoadingAsync(async () =>
             {
-                var isAuthenticated = await _gitHubService.AuthenticateAsync(savedToken);
-                if (isAuthenticated)
+                var savedToken = await _authService.GetAccessTokenAsync();
+                if (!string.IsNullOrEmpty(savedToken))
                 {
-                    IsConnected = true;
-                    NavigationService.NavigateTo<RepositoryListView>();
+                    var isAuthenticated = await _gitHubService.AuthenticateAsync(savedToken);
+                    if (isAuthenticated)
+                    {
+                        IsConnected = true;
+                        NavigationService.NavigateTo<RepositoryListView>();
+                    }
                 }
-            }
+            }, "계정 연동 상태를 확인중입니다...");
         }
 
 
@@ -97,19 +100,22 @@ namespace GitActionRunner.ViewModels
                     return;
                 }
 
-                var isAuthenticated = await _gitHubService.AuthenticateAsync(AccessToken);
-                if (isAuthenticated)
+                await ExecuteWithLoadingAsync(async () =>
                 {
-                    await _authService.SaveAccessTokenAsync(AccessToken);
+                    var isAuthenticated = await _gitHubService.AuthenticateAsync(AccessToken);
+                    if (isAuthenticated)
+                    {
+                        await _authService.SaveAccessTokenAsync(AccessToken);
                     
-                    IsConnected = true;
-                    AccessToken = string.Empty;
-                    NavigationService.NavigateTo<RepositoryListView>();
-                }
-                else
-                {
-                    ConnectionStatus = "인증 실패: 유효하지 않은 토큰";
-                }
+                        IsConnected = true;
+                        AccessToken = string.Empty;
+                        NavigationService.NavigateTo<RepositoryListView>();
+                    }
+                    else
+                    {
+                        ConnectionStatus = "인증 실패: 유효하지 않은 토큰";
+                    }
+                }, "인증을 진행중입니다...");
             }
             catch (Exception ex)
             {

@@ -4,6 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:local="clr-namespace:GitActionRunner.Views"
+      xmlns:controls="clr-namespace:GitActionRunner.Controls"
       Background="{StaticResource BackgroundColor}"
       Width="400"
       Height="300">
@@ -40,5 +41,8 @@
                 </StackPanel>
             </Border>
         </StackPanel>
+        <controls:LoadingIndicator 
+            LoadingMessage="{Binding LoadingMessage}"
+            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
     </Grid>
 </Page>

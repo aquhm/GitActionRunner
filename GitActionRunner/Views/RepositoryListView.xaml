@@ -3,6 +3,7 @@
      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
      xmlns:local="clr-namespace:GitActionRunner.Controls"
      xmlns:models="clr-namespace:GitActionRunner.Core.Models"
+     xmlns:controls="clr-namespace:GitActionRunner.Controls"
      Title="Repositories"
      Background="{StaticResource BackgroundColor}">
     
@@ -121,6 +122,9 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <controls:LoadingIndicator 
+            LoadingMessage="{Binding LoadingMessage}"
+            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
         <Grid Grid.Column="1" Grid.Row="1"  Margin="0, 10, 10, 10">
             
@@ -129,7 +133,7 @@
                     CornerRadius="4"
                     Padding="20"
                     Visibility="{Binding SelectedRepository, Converter={StaticResource NullToVisibilityConverter}}">
-                <TextBlock Text="왼쪽에서 저장소를 선택해주세요."
+                <TextBlock Text="Please select a repository."
                            Foreground="#AAB6C2"
                            FontSize="16"
                            HorizontalAlignment="Center"
@@ -175,6 +179,9 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+            <controls:LoadingIndicator 
+                LoadingMessage="{Binding LoadingMessage}"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </Grid>
     </Grid>
 </Page>
