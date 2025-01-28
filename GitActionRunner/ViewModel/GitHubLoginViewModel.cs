@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GitActionRunner.Core.Interfaces;
@@ -37,15 +36,12 @@ namespace GitActionRunner.ViewModels
             set => SetProperty(ref _isConnected, value);
         }
         
-        public bool IsNotConnected => !IsConnected;
-        
         public INavigationService NavigationService
         {
             get => _navigationService;
             set
             {
                 _navigationService = value;
-                // NavigationService가 설정된 후 초기화 작업이 필요한 경우 여기서 수행
             }
         }
         
@@ -66,6 +62,7 @@ namespace GitActionRunner.ViewModels
             get => _connectionStatus;
             set => SetProperty(ref _connectionStatus, value);
         }
+        
         public string AccessToken
         {
             get => _accessToken;
@@ -75,12 +72,8 @@ namespace GitActionRunner.ViewModels
         public ICommand LoginWithTokenCommand { get; }
         public ICommand LogoutCommand { get; }
         
-        
-       
-        
         private async Task InitializeAsync()
         {
-            // 저장된 토큰이 있는지 확인
             var savedToken = await _authService.GetAccessTokenAsync();
             if (!string.IsNullOrEmpty(savedToken))
             {
@@ -88,8 +81,6 @@ namespace GitActionRunner.ViewModels
                 if (isAuthenticated)
                 {
                     IsConnected = true;
-                    await LoadUserInfo();
-                    UpdateConnectionStatus();
                     NavigationService.NavigateTo<RepositoryListView>();
                 }
             }
@@ -110,9 +101,9 @@ namespace GitActionRunner.ViewModels
                 if (isAuthenticated)
                 {
                     await _authService.SaveAccessTokenAsync(AccessToken);
+                    
                     IsConnected = true;
-                    await LoadUserInfo();
-                    UpdateConnectionStatus();
+                    AccessToken = string.Empty;
                     NavigationService.NavigateTo<RepositoryListView>();
                 }
                 else
@@ -128,28 +119,11 @@ namespace GitActionRunner.ViewModels
 
         private async Task Logout()
         {
-            await _authService.SaveAccessTokenAsync(null);
+            await _authService.SaveAccessTokenAsync(string.Empty);
             IsConnected = false;
-            UserName = null;
-            Email = null;
-            UpdateConnectionStatus();
-        }
-
-        private async Task LoadUserInfo()
-        {
-            if (IsConnected)
-            {
-                // GitHub API로 사용자 정보 로드
-                ConnectionStatus = "연결됨";
-            }
-        }
-
-        private void UpdateConnectionStatus()
-        {
-            ConnectionStatus = IsConnected ? "연결됨" : "연결되지 않음";
+            UserName = string.Empty;
+            Email = string.Empty;
+            AccessToken = string.Empty;
         }
     }
-    
-    
-    
 }

@@ -11,11 +11,86 @@
             <ColumnDefinition Width="250"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- 프로필 섹션 -->
+        <Border Grid.ColumnSpan="2" Background="#252547" Height="40">
+            <Grid Margin="10,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+            
+                <TextBlock Text="{Binding UserName}" 
+                           FontWeight="Bold" 
+                           Foreground="White" 
+                           FontSize="16"
+                           Padding="10"
+                           VerticalAlignment="Center"/>
+            
+                <Grid Grid.Column="1">
+                    <Button x:Name="SettingsButton"
+                            Width="32" 
+                            Height="32"
+                            Style="{StaticResource IconButton}"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            Click="SettingsButton_Click">
+                        <Path Data="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"
+                              Fill="White"
+                              Width="20"
+                              Height="20"
+                              Stretch="Uniform"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                    </Button>
 
-        <ListView ItemsSource="{Binding Repositories}"
+                    <Popup x:Name="SettingsPopup" 
+                           PlacementTarget="{Binding ElementName=SettingsButton}"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           AllowsTransparency="True">
+                        <Border Background="#252547" 
+                                BorderThickness="1" 
+                                BorderBrush="#2d2f4b"
+                                CornerRadius="8"
+                                Width="300"
+                                Height="200">
+                            <Grid Margin="20">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+            
+                                <TextBlock Text="설정"
+                                           Foreground="White"
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Margin="0,0,0,20"/>
+            
+                                <StackPanel Grid.Row="1">
+                                    <Button Content="로그아웃"
+                                            Command="{Binding LogoutCommand}"
+                                            Style="{StaticResource MenuPopupButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Margin="0,0,0,10"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Popup>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <ListView Grid.Row="1" ItemsSource="{Binding Repositories}"
                   SelectedItem="{Binding SelectedRepository}"
                   Style="{StaticResource ModernList}"
                   Margin="0, 10, 10, 10">
+            
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Border CornerRadius="4"
@@ -47,7 +122,20 @@
             </ListView.ItemTemplate>
         </ListView>
 
-        <Grid Grid.Column="1" Margin="0, 10, 10, 10">  <!-- 좌우 여백 줄임 -->
+        <Grid Grid.Column="1" Grid.Row="1"  Margin="0, 10, 10, 10">
+            
+            <!-- 안내 메시지 -->
+            <Border 
+                    CornerRadius="4"
+                    Padding="20"
+                    Visibility="{Binding SelectedRepository, Converter={StaticResource NullToVisibilityConverter}}">
+                <TextBlock Text="왼쪽에서 저장소를 선택해주세요."
+                           Foreground="#AAB6C2"
+                           FontSize="16"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+            
             <ListView ItemsSource="{Binding Workflows}"
                       Style="{StaticResource ModernList}">
                 <ListView.ItemTemplate>

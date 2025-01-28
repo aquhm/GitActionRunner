@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using Octokit;
 using GitActionRunner.Core.Interfaces;
-using GitActionRunner.Core.Models;
+using Serilog;
 
 namespace GitActionRunner.Core.Services
 {
@@ -32,6 +32,7 @@ namespace GitActionRunner.Core.Services
         {
             try
             {
+                Log.Information("Attempting to authenticate with GitHub");
                 _client = new GitHubClient(new ProductHeaderValue("GitActionRunner"))
                 {
                     Credentials = new Credentials(token)
@@ -39,10 +40,13 @@ namespace GitActionRunner.Core.Services
 
                 var user = await _client.User.Current();
                 await _authenticationService.SaveAccessTokenAsync(token);
+                
+                Log.Information("GitHub authentication successful for user: {UserLogin}", user.Login);
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Log.Error(ex, "GitHub authentication failed");
                 return false;
             }
         }
@@ -51,6 +55,7 @@ namespace GitActionRunner.Core.Services
         {
             if (_client == null)
             {
+                Log.Debug("Initializing GitHub client");
                 var token = await _authenticationService.GetAccessTokenAsync();
                 if (!string.IsNullOrEmpty(token))
                 {
@@ -58,9 +63,12 @@ namespace GitActionRunner.Core.Services
                     {
                             Credentials = new Credentials(token)
                     };
+                    
+                    Log.Information("GitHub client initialized successfully");
                 }
                 else
                 {
+                    Log.Information("Failed to initialize GitHub client: No authentication token available");
                     throw new InvalidOperationException("GitHub client is not initialized. Please authenticate first.");
                 }
             }
@@ -68,17 +76,29 @@ namespace GitActionRunner.Core.Services
 
         public async Task<IEnumerable<Models.Repository>> GetRepositoriesAsync()
         {
-            await EnsureClientInitialized();
-            var repos = await _client.Repository.GetAllForCurrent();
-            var result = repos.Select(r => new Models.Repository
+            try
             {
-                    Name = r.Name,
-                    Owner = r.Owner.Login,
-                    Description = r.Description,
-                    //HasWorkflows = r.has
-            });
+                await EnsureClientInitialized();
+                Log.Information("Fetching repositories for current user");
+            
+                var repos = await _client.Repository.GetAllForCurrent();
+                var result = repos.Select(r => new Models.Repository
+                {
+                        Name = r.Name,
+                        Owner = r.Owner.Login,
+                        Description = r.Description,
+                        //HasWorkflows = r.has
+                });
 
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to fetch repositories");
+                throw;
+            }
+
+            return default;
         }
 
         public async Task<IEnumerable<Models.WorkflowRun>> GetWorkflowRunsAsync(string owner, string repo)

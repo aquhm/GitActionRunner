@@ -7,11 +7,11 @@ using GitActionRunner.Core.Interfaces;
 using GitActionRunner.Core.Models;
 using GitActionRunner.Views;
 using System.Windows;
-using System.Windows.Threading;
+using Serilog;
 
 namespace GitActionRunner.ViewModels
 {
-    public class RepositoryListViewModel : ObservableObject
+    public class RepositoryListViewModel : ObservableObject, INavigationAware
     {
         private readonly IGitHubService _gitHubService;
         private readonly IAuthenticationService _authService;
@@ -91,24 +91,56 @@ namespace GitActionRunner.ViewModels
 
             Repositories = new ObservableCollection<Repository>();
             Workflows = new ObservableCollection<WorkflowRun>();
+            Branches = new ObservableCollection<string>();
         
             LogoutCommand = new AsyncRelayCommand(ExecuteLogout);
             RunWorkflowCommand = new AsyncRelayCommand<WorkflowRun>(ExecuteWorkflow, canExecute: (workflow) => workflow != null);
-            Branches = new ObservableCollection<string>();
-        
-            Task.Run(InitializeAsync);
         }
         
         private async Task InitializeAsync()
         {
-            await LoadUserInfo();
-            await LoadRepositories();
+            try
+            {
+                Log.Debug("Clearing collections");
+                await Application.Current.Dispatcher.InvokeAsync(() => 
+                {
+                    if (Repositories != null) Repositories.Clear();
+                    if (Workflows != null) Workflows.Clear();
+                    if (Branches != null) Branches.Clear();
+                });
+        
+                Log.Information("Loading user info");
+                await LoadUserInfo();
+        
+                Log.Information("Loading repositories");
+                await LoadRepositories();
+        
+                Log.Information("InitializeAsync completed");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error in InitializeAsync");
+                MessageBox.Show($"초기화 중 치명적인 오류가 발생했습니다: {ex.Message}", 
+                                "오류", 
+                                MessageBoxButton.OK, 
+                                MessageBoxImage.Error);
+                _navigationService.NavigateTo<GitHubLoginView>(); // 로그인 화면으로 복귀
+            }
         }
         
         private async Task LoadUserInfo()
         {
-            var user = await _gitHubService.GetCurrentUser();
-            UserName = user?.Name ?? user?.Login;
+            try
+            {
+                var user = await _gitHubService.GetCurrentUser();
+                UserName = user?.Name ?? user?.Login;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading user info: {ex}");
+                MessageBox.Show("Failed to load user information", "Error", 
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async Task ExecuteLogout()
@@ -131,8 +163,23 @@ namespace GitActionRunner.ViewModels
         
         private async Task LoadRepositories()
         {
-            var repos = await _gitHubService.GetRepositoriesAsync();
-            Repositories = new ObservableCollection<Repository>(repos);
+            try
+            {
+                var repos = await _gitHubService.GetRepositoriesAsync();
+            
+                // UI 스레드에서 컬렉션 업데이트
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    Repositories = new ObservableCollection<Repository>(repos);
+                    OnPropertyChanged(nameof(Repositories));
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading repositories: {ex}");
+                MessageBox.Show("Failed to load repositories", "Error", 
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         
         // RepositoryListViewModel.cs
@@ -196,6 +243,41 @@ namespace GitActionRunner.ViewModels
         private void UpdateWorkflowCount()
         {
             WorkflowCount = Workflows.Count;
+        }
+
+        public async Task OnNavigatedTo()
+        {
+            Log.Information("RepositoryListViewModel.OnNavigatedTo called");
+            try
+            {
+                await Application.Current.Dispatcher.InvokeAsync(async () =>
+                {
+                    try 
+                    {
+                        Log.Debug("Starting InitializeAsync");
+                        await InitializeAsync();
+                        Log.Information("InitializeAsync completed successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Error in InitializeAsync");
+                        MessageBox.Show($"데이터 로딩 중 오류가 발생했습니다: {ex.Message}", 
+                                        "오류", 
+                                        MessageBoxButton.OK, 
+                                        MessageBoxImage.Error);
+                        _navigationService.NavigateTo<GitHubLoginView>();
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error in OnNavigatedTo");
+                MessageBox.Show($"화면 전환 중 오류가 발생했습니다: {ex.Message}", 
+                                "오류", 
+                                MessageBoxButton.OK, 
+                                MessageBoxImage.Error);
+                _navigationService.NavigateTo<GitHubLoginView>();
+            }
         }
     }
 }

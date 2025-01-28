@@ -2,7 +2,6 @@
 
 namespace GitActionRunner.Core.Models;
 
-// Services/AuthenticationService.cs
 public class AuthenticationService : IAuthenticationService
 {
     private string _token;

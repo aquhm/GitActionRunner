@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using GitActionRunner.Converters;
 using GitActionRunner.Core.Interfaces;
 using GitActionRunner.Core.Models;
 using GitActionRunner.Core.Services;
@@ -7,6 +8,8 @@ using GitActionRunner.Services;
 using GitActionRunner.ViewModels;
 using GitActionRunner.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Serilog.Events;
 
 namespace GitActionRunner
 {
@@ -15,6 +18,18 @@ namespace GitActionRunner
         private static Frame _mainNavigationFrame;
         private static IServiceCollection _services;
         public static IServiceProvider ServiceProvider { get; private set; }
+        
+        public App()
+        {
+            // UI Thread의 처리되지 않은 예외 처리
+            this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+        
+            // Non-UI Thread의 처리되지 않은 예외 처리
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        
+            // Task에서 처리되지 않은 예외 처리
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+        }
     
         public static void SetMainFrame(Frame frame)
         {
@@ -25,15 +40,44 @@ namespace GitActionRunner
                 ServiceProvider = _services.BuildServiceProvider();
             }
         }
+        
+        private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            Log.Error(e.Exception, "Unhandled exception in UI thread");
+            MessageBox.Show($"오류가 발생했습니다: {e.Exception.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+            e.Handled = true;
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var exception = e.ExceptionObject as Exception;
+            Log.Fatal(exception, "Unhandled exception in AppDomain");
+        }
+
+        private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            Log.Error(e.Exception, "Unhandled exception in Task");
+            e.SetObserved();
+        }
     
         protected override void OnStartup(StartupEventArgs e)
         {
+            base.OnStartup(e);
+            LoggerSetup.Configure(LogEventLevel.Verbose);
+            
             _services = new ServiceCollection();
             ConfigureServices(_services);
             ServiceProvider = _services.BuildServiceProvider();
 
             var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
+        }
+        
+        protected override void OnExit(ExitEventArgs e)
+        {
+            Log.Information("Application shutting down");
+            base.OnExit(e);
+            Log.CloseAndFlush();
         }
 
         private void ConfigureServices(IServiceCollection services)
@@ -53,8 +97,9 @@ namespace GitActionRunner
             services.AddTransient<RepositoryListView>();
         
             // Navigation Service를 singleton으로 등록
+            //services.AddTransient<INavigationService, NavigationService>();
             services.AddSingleton<INavigationService>(provider =>
-                                                              new NavigationService(provider, _mainNavigationFrame));
+                                                               new NavigationService(provider, _mainNavigationFrame));
         }
     }
 }
