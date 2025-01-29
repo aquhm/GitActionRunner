@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using DesktopNotifications.Windows;
 using GitActionRunner.Converters;
 using GitActionRunner.Core.Interfaces;
 using GitActionRunner.Core.Models;
@@ -29,7 +30,6 @@ namespace GitActionRunner
         
             // Task에서 처리되지 않은 예외 처리
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-            
         }
     
         public static void SetMainFrame(Frame frame)
@@ -65,6 +65,8 @@ namespace GitActionRunner
         {
             base.OnStartup(e);
             LoggerSetup.Configure(LogEventLevel.Verbose);
+
+            NotificationService.Initialize().Wait();
             
             _services = new ServiceCollection();
             ConfigureServices(_services);

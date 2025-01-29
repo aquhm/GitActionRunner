@@ -1,19 +1,20 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GitActionRunner.Core.Interfaces;
 using GitActionRunner.Core.Models;
 using GitActionRunner.Views;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Threading;
 using GitActionRunner.Controls;
+using GitActionRunner.Core.Services;
 using Microsoft.Toolkit.Uwp.Notifications;
+// using Microsoft.Windows.AppNotifications;
+// using Microsoft.Windows.AppNotifications.Builder;
 using Serilog;
+
 
 namespace GitActionRunner.ViewModels
 {
@@ -292,24 +293,26 @@ namespace GitActionRunner.ViewModels
             }
         }
         
-        private void ShowToast(string message, bool isSuccess)
+        
+        
+        private async void ShowToast(string message, bool isSuccess)
         {
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            try
             {
-                try
+                await Application.Current.Dispatcher.Invoke(async () =>
                 {
-                    var toast = new CustomToast(message, isSuccess);
-                    toast.Show();
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Failed to show toast: {ex.Message}");
-                    MessageBox.Show(message, 
-                                    isSuccess ? "Success" : "Failed",
-                                    MessageBoxButton.OK, 
-                                    isSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
-                }
-            }));
+                    await NotificationService.ShowToast(isSuccess ? "Success" : "Error", message);
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Toast Error: {ex.Message}");
+                MessageBox.Show(message, 
+                                isSuccess ? "Success" : "Error",
+                                MessageBoxButton.OK, 
+                                isSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning
+                               );
+            }
         }
 
         private void UpdateWorkflowCount()
