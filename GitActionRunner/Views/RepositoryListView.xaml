@@ -1,15 +1,15 @@
 <Page x:Class="GitActionRunner.Views.RepositoryListView"
-     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-     xmlns:local="clr-namespace:GitActionRunner.Controls"
-     xmlns:models="clr-namespace:GitActionRunner.Core.Models"
-     xmlns:controls="clr-namespace:GitActionRunner.Controls"
-     Title="Repositories"
-     Background="{StaticResource BackgroundColor}">
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="clr-namespace:GitActionRunner.Controls"
+      xmlns:models="clr-namespace:GitActionRunner.Core.Models"
+      xmlns:controls="clr-namespace:GitActionRunner.Controls"
+      Title="Repositories"
+      Background="{StaticResource BackgroundColor}">
     
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="250" MinWidth="250" MaxWidth="250"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         
@@ -19,21 +19,21 @@
         </Grid.RowDefinitions>
         
         <!-- 프로필 섹션 -->
-        <Border Grid.ColumnSpan="2" Background="#252547" Height="40">
-            <Grid Margin="10,0">
+        <Border Grid.ColumnSpan="2" Background="#252547">
+            <Grid Height="40">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-            
+    
                 <TextBlock Text="{Binding UserName}" 
                            FontWeight="Bold" 
                            Foreground="White" 
                            FontSize="16"
-                           Padding="10"
+                           Margin="20,0,0,0"
                            VerticalAlignment="Center"/>
-            
-                <Grid Grid.Column="1">
+    
+                <Grid Grid.Column="1" Margin="0,0,20,0">
                     <Button x:Name="SettingsButton"
                             Width="32" 
                             Height="32"
@@ -142,7 +142,7 @@
             </Border>
             
             <ListView ItemsSource="{Binding Workflows}"
-                      Style="{StaticResource ModernList}">
+          Style="{StaticResource ModernList}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Border Background="#252547"
@@ -151,30 +151,43 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="100"/>  <!-- 상태표시 영역 추가 -->
                                     <ColumnDefinition Width="200"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Workflow Name -->
                                 <TextBlock Text="{Binding Name}"
-                                           Foreground="White"
-                                           FontWeight="Bold"
-                                           FontSize="14"
-                                           VerticalAlignment="Center"/>
+                                          Foreground="White"
+                                          FontWeight="Bold"
+                                          FontSize="14"
+                                          VerticalAlignment="Center"/>
+                                
+                                <!-- Workflow Status -->
+                                <!-- Workflow Status -->
+                                <TextBlock Grid.Column="1" 
+                                       Text="{Binding Status}"
+                                       Visibility="{Binding Status, Converter={StaticResource StatusVisibilityConverter}}"
+                                       Foreground="{Binding Status, Converter={StaticResource StatusColorConverter}}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
 
                                 <!-- ComboBox -->
-                                <ComboBox Grid.Column="1"
-                                          ItemsSource="{Binding DataContext.Branches, 
-                                    RelativeSource={RelativeSource AncestorType=ListView}}"
-                                          SelectedItem="{Binding DataContext.SelectedBranch, 
-                                    RelativeSource={RelativeSource AncestorType=ListView}}"
-                                          Style="{StaticResource ModernComboBox}"
-                                          Margin="10,0"/>
+                                <ComboBox Grid.Column="2"
+                                         ItemsSource="{Binding DataContext.Branches, 
+                                         RelativeSource={RelativeSource AncestorType=ListView}}"
+                                         SelectedItem="{Binding DataContext.SelectedBranch, 
+                                         RelativeSource={RelativeSource AncestorType=ListView}}"
+                                         Style="{StaticResource ModernComboBox}"
+                                         Margin="10,0"/>
 
                                 <!-- Run Button -->
-                                <Button Grid.Column="2"
-                                        Content="Run"
-                                        Style="{StaticResource ModernButton}"/>
+                                <Button Grid.Column="3"
+                                       Content="Run"
+                                       Command="{Binding DataContext.RunWorkflowCommand, 
+                                       RelativeSource={RelativeSource AncestorType=ListView}}"
+                                       CommandParameter="{Binding}"
+                                       Style="{StaticResource ModernButton}"/>
                             </Grid>
                         </Border>
                     </DataTemplate>

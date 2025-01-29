@@ -47,7 +47,7 @@ public partial class MainWindow : Window
         {
             ResizeMode = ResizeMode.CanResize;
             SizeToContent = SizeToContent.Manual;
-            Width = 780;
+            Width = 840;
             Height = 500;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
@@ -86,5 +86,17 @@ public partial class MainWindow : Window
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+    
+    public void EnableResize()
+    {
+        this.ResizeMode = ResizeMode.CanResize;
+        //this.WindowStyle = WindowStyle.SingleBorderWindow;
+    }
+
+    public void DisableResize()
+    {
+        this.ResizeMode = ResizeMode.NoResize;
+        //this.WindowStyle = WindowStyle.SingleBorderWindow;
     }
 }

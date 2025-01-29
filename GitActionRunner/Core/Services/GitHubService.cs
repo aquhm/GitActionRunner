@@ -2,6 +2,7 @@
 using Octokit;
 using GitActionRunner.Core.Interfaces;
 using Serilog;
+using WorkflowRun = GitActionRunner.Core.Models.WorkflowRun;
 
 namespace GitActionRunner.Core.Services
 {
@@ -87,7 +88,6 @@ namespace GitActionRunner.Core.Services
                         Name = r.Name,
                         Owner = r.Owner.Login,
                         Description = r.Description,
-                        //HasWorkflows = r.has
                 });
 
                 return result;
@@ -115,20 +115,67 @@ namespace GitActionRunner.Core.Services
 
         public async Task<Models.WorkflowRun> TriggerWorkflowAsync(string owner, string repo, string workflowId, string branch)
         {
+            await EnsureClientInitialized();
+    
             await _client.Actions.Workflows.CreateDispatch(
                                                            owner,
                                                            repo,
                                                            long.Parse(workflowId),
                                                            new CreateWorkflowDispatch(branch));
 
-            return new Models.WorkflowRun
+            await Task.Delay(2000);
+
+            var runs = await _client.Actions.Workflows.Runs.List(owner, repo);
+
+            var latestRun = runs.WorkflowRuns
+                    .Where(r => r.WorkflowId == long.Parse(workflowId))
+                    .OrderByDescending(r => r.CreatedAt)
+                    .FirstOrDefault();
+
+            if (latestRun != null)
+            {
+                return new WorkflowRun
+                {
+                        Id = workflowId,
+                        RunId = latestRun.Id.ToString(),
+                        Name = latestRun.Name,
+                        Status = latestRun.Status.ToString(),
+                        CreatedAt = DateTime.UtcNow
+                };
+            }
+
+            return new WorkflowRun
             {
                     Id = workflowId,
                     Status = "queued",
                     CreatedAt = DateTime.UtcNow
             };
         }
-        
+
+        public async Task<WorkflowRun> GetWorkflowRunStatusAsync(string owner, string repo, string runId)
+        {
+            await EnsureClientInitialized();
+            try 
+            {
+                var run = await _client.Actions.Workflows.Runs.Get(owner, repo, long.Parse(runId));
+                return new WorkflowRun
+                {
+                        RunId = runId,
+                        Status = run.Status.StringValue,
+                        Conclusion = run.Conclusion?.StringValue
+                };
+            }
+            catch (NotFoundException ex)
+            {
+                return new WorkflowRun
+                {
+                        RunId = runId,
+                        Status = "queued",
+                        Conclusion = null
+                };
+            }
+        }
+
         public async Task<IEnumerable<string>> GetBranchesAsync(string owner, string repo)
         {
             try

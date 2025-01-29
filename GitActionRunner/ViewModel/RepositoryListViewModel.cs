@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -7,6 +8,11 @@ using GitActionRunner.Core.Interfaces;
 using GitActionRunner.Core.Models;
 using GitActionRunner.Views;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Threading;
+using GitActionRunner.Controls;
+using Microsoft.Toolkit.Uwp.Notifications;
 using Serilog;
 
 namespace GitActionRunner.ViewModels
@@ -17,6 +23,7 @@ namespace GitActionRunner.ViewModels
         private readonly IAuthenticationService _authService;
         private readonly INavigationService _navigationService;
         private ObservableCollection<Repository> _repositories;
+        private ConcurrentDictionary<string, WorkflowRun> _activeRuns = new();
         private Repository _selectedRepository;
         
         private ObservableCollection<string> _branches;
@@ -202,6 +209,10 @@ namespace GitActionRunner.ViewModels
                     Workflows.Clear();
                     foreach (var workflow in workflows)
                     {
+                        var status = await _gitHubService.GetWorkflowRunStatusAsync(repository.Owner, repository.Name, workflow.Id);
+                        workflow.Status = $"{status.Status} ({status.Conclusion ?? "pending"})";
+                        workflow.Conclusion = status.Conclusion;
+                        
                         Workflows.Add(workflow);
                     }
                 }, "Loading workflow information...");
@@ -225,20 +236,80 @@ namespace GitActionRunner.ViewModels
 
             try
             {
-                await _gitHubService.TriggerWorkflowAsync(
-                                                          SelectedRepository.Owner,
-                                                          SelectedRepository.Name,
-                                                          workflow.Id,
-                                                          SelectedBranch);
-            
-                MessageBox.Show("Workflow started successfully", "Success",
-                                MessageBoxButton.OK, MessageBoxImage.Information);
+                var result = await _gitHubService.TriggerWorkflowAsync(
+                                                                      SelectedRepository.Owner,
+                                                                      SelectedRepository.Name,
+                                                                      workflow.Id,
+                                                                      SelectedBranch);
+
+                if (result != null)
+                {
+                    workflow.RunId = result.RunId;
+                    workflow.Status = "queue";
+                    _activeRuns.TryAdd(result.RunId, workflow);
+                    StartStatusPolling(result.RunId);
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Failed to start workflow: {ex.Message}", "Error",
                                 MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+        
+        private async void StartStatusPolling(string runId)
+        {
+            while (_activeRuns.TryGetValue(runId, out var workflow))
+            {
+                try
+                {
+                    var status = await _gitHubService.GetWorkflowRunStatusAsync(
+                                                                                SelectedRepository.Owner,
+                                                                                SelectedRepository.Name,
+                                                                                runId);
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (!string.IsNullOrEmpty(status.Conclusion))
+                        {
+                            _activeRuns.TryRemove(runId, out _);
+                            workflow.Status = string.Empty;
+                            ShowToast($"Workflow '{workflow.Name}' completed: {status.Conclusion}", 
+                                      status.Conclusion.ToLower() == "success");
+                        }
+                        else
+                        {
+                            workflow.Status = status.Status;
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error polling workflow status: {ex}");
+                }
+
+                await Task.Delay(5000);
+            }
+        }
+        
+        private void ShowToast(string message, bool isSuccess)
+        {
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    var toast = new CustomToast(message, isSuccess);
+                    toast.Show();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to show toast: {ex.Message}");
+                    MessageBox.Show(message, 
+                                    isSuccess ? "Success" : "Failed",
+                                    MessageBoxButton.OK, 
+                                    isSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                }
+            }));
         }
 
         private void UpdateWorkflowCount()

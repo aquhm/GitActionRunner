@@ -37,6 +37,11 @@ namespace GitActionRunner.Views
         private void RepositoryListView_Loaded(object sender, RoutedEventArgs e)
         {
             Log.Information("RepositoryListView loaded");
+            
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+            {
+                mainWindow.EnableResize();
+            }
         }
     }
 }

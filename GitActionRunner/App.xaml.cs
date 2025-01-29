@@ -29,6 +29,7 @@ namespace GitActionRunner
         
             // Task에서 처리되지 않은 예외 처리
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+            
         }
     
         public static void SetMainFrame(Frame frame)
